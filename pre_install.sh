@@ -11,6 +11,9 @@ ROOT_DRIVE="/dev/nvme0n1p4"
 CRYPT_NAME="cryptroot"
 MAP_DRIVE="/dev/mapper/$CRYPT_NAME"
 
+# larger font
+setfont sun12x22
+
 # connect to internet
 wpa_supplicant -B -i $WIFI_ADAPTER -c <(wpa_passphrase "$SSID" "$WIFI_PASSPHRASE")
 dhclient $WIFI_ADAPTER
@@ -68,8 +71,8 @@ mkinitcpio -p linux
 
 # setup GRUB
 vim /etc/defaults/grub
-grub-install --target=x86_64-efi --recheck --efi-directory=/boot/EFI --bootloader-id=GRUB
-grub-mkconfig -o /boot/EFI/grub/grub.cfg
+grub-install --target=x86_64-efi --recheck --efi-directory=/boot --bootloader-id=GRUB
+grub-mkconfig -o /boot/grub/grub.cfg
 
 
 # finish and reboot
