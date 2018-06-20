@@ -7,7 +7,9 @@ wifi-menu
 
 ### Hard
 echo -en "$WIFI_PASSPHRASE" | wpa_passphrase $SSID >> /etc/wpa_supplicant.conf
+
 wpa_supplicant -B -D wext -i $WIFI_ADAPTER -c /etc/wpa_supplicant.conf
+
 dhclient $WIFI_ADAPTER
 
 ## Script
@@ -23,5 +25,7 @@ HOOKS="base udev autodetect modconf block encrypt lvm2 resume filesystems keyboa
 
 ### Grub
 GRUB_CMDLINE_LINUX="cryptdevice=/dev/nvme0n1p4:cryptroot resume=/dev/mapper/arch-swap"
+
 GRUB_ENABLE_CRYPTODISK=y
+
 GRUB_FONT=/boot/grub/fonts/DejaVuSansMono20.pf2
