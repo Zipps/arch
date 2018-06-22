@@ -10,7 +10,7 @@ echo -en "$WIFI_PASSPHRASE" | wpa_passphrase $SSID >> /etc/wpa_supplicant.conf
 
 wpa_supplicant -B -D wext -i $WIFI_ADAPTER -c /etc/wpa_supplicant.conf
 
-dhclient $WIFI_ADAPTER
+dhcpcd $WIFI_ADAPTER
 
 ## Script
 

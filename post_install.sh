@@ -25,3 +25,9 @@ packman -S gnome gnome-extra gdm
 # enable display manager
 systemctl enable gdm
 systemctl start gdm.service
+
+# password protect GRUB at boot
+echo -en "" | PBKDF2=grub-mkpasswd-pbkdf2
+set superusers=$USERNAME
+password_pbkdf2 $USERNAME $PBKDF2
+grub-mkconfig -o /boot/grub/grub.cfg

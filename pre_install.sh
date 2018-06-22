@@ -28,11 +28,10 @@ echo -en "$DRIVE_PASSPHRASE" | cryptsetup luksOpen "$ROOT_DRIVE" $CRYPT_NAME
 
 pvcreate /dev/mapper/$CRYPT_NAME
 vgcreate arch /dev/mapper/$CRYPT_NAME
-lvcreate -L +8G arch -n swap
+lvcreate -L +18G arch -n swap   # Need enough for hibernate
 lvcreate -l +100%FREE arch -n root
 
 # Create filesystems on your encrypted partitions
-
 mkswap $SWAP_DRIVE
 mkfs.ext4 $MAP_DRIVE
 
@@ -76,24 +75,15 @@ mkinitcpio -p linux
 mkdir /mnt/windows
 mount $WINDOWS_BOOT /mnt/windows 
 grub-mkfont --output=/boot/grub/fonts/DejaVuSansMono20.pf2 \ --size=20 /usr/share/fonts/TTF/dejavu/DejaVuSansMono.ttf
-echo "menuentry \"System shutdown\" {
+echo "menuentry \"Shutdown\" {
 	echo \"System shutting down...\"
 	halt
 }" >> /etc/grub.d/40_custom
-echo "menuentry \"System restart\" {
+echo "menuentry \"Restart\" {
 	echo \"System rebooting...\"
 	reboot
 }" >> /etc/grub.d/40_custom
-fs_uuid=grub-probe --target=fs_uuid esp/EFI/Microsoft/Boot/bootmgfw.efi
-hints_string=grub-probe --target=hints_string esp/EFI/Microsoft/Boot/bootmgfw.efi
-echo "menuentry \"Microsoft Windows\" {
-		insmod part_gpt
-		insmod fat
-		insmod search_fs_uuid
-		insmod chain
-		search --fs-uuid --set=root $hints_string $fs_uuid
-		chainloader /EFI/Microsoft/Boot/bootmgfw.efi
-}" >> /etc/grub.d/40_custom
+
 vim /etc/defaults/grub
 grub-install --target=x86_64-efi --recheck --efi-directory=/boot --bootloader-id=GRUB
 grub-mkconfig -o /boot/grub/grub.cfg
