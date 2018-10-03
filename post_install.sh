@@ -20,11 +20,11 @@ useradd -m -g wheel -s /bin/bash $USERNAME
 echo -en "$USERPW\n$USERPW" | passwd $USERNAME
 
 # install packages
-packman -S gnome gnome-extra gdm
+packman -S gnome gnome-tweaks gnome-usage gnome-weather sddm
 
 # enable display manager
-systemctl enable gdm
-systemctl start gdm.service
+systemctl enable sddm
+systemctl start sddm.service
 
 # password protect GRUB at boot
 echo -en "" | PBKDF2=grub-mkpasswd-pbkdf2

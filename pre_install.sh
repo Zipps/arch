@@ -3,7 +3,7 @@ BEFOREWIFI=true
 MYHOSTNAME="arch"
 SSID=""
 WIFI_PASSPHRASE=""
-WIFI_ADAPTER="wlp1s0"
+WIFI_ADAPTER=""
 
 ROOT_PASSWORD=""
 DRIVE_PASSPHRASE=""
@@ -15,9 +15,17 @@ ROOT_MAP="/dev/mapper/$CRYPT_NAME"
 
 MAP_DRIVE="/dev/mapper/arch-root"
 SWAP_DRIVE="/dev/mapper/arch-swap"
+SWAP_SIZE=18G
 
 # larger font
 setfont sun12x22
+
+# connect to wifi
+if ! [ -z $WIFI_ADAPTER ]; then
+	echo -en "$WIFI_PASSPHRASE" | wpa_passphrase $SSID >> /etc/wpa_supplicant.conf
+	wpa_supplicant -B -D wext -i $WIFI_ADAPTER -c /etc/wpa_supplicant.conf
+	dhcpcd $WIFI_ADAPTER
+fi
 
 # update system clock
 timedatectl set-ntp true
@@ -28,7 +36,7 @@ echo -en "$DRIVE_PASSPHRASE" | cryptsetup luksOpen "$ROOT_DRIVE" $CRYPT_NAME
 
 pvcreate /dev/mapper/$CRYPT_NAME
 vgcreate arch /dev/mapper/$CRYPT_NAME
-lvcreate -L +18G arch -n swap   # Need enough for hibernate
+lvcreate -L +$SWAP_SIZE arch -n swap
 lvcreate -l +100%FREE arch -n root
 
 # Create filesystems on your encrypted partitions
@@ -42,7 +50,7 @@ mkdir /mnt/boot
 mount $BOOT_DRIVE /mnt/boot
 
 # bootstrapping
-pacstrap /mnt base base-devel grub efibootmgr os-prober git intel-ucode networkmanager
+pacstrap /mnt base base-devel git intel-ucode networkmanager
 
 # fstab
 genfstab -U /mnt >> /mnt/etc/fstab
@@ -72,6 +80,7 @@ vim /etc/mkinitcpio.conf
 mkinitcpio -p linux
 
 # setup GRUB
+pacman -S grub os-prober efibootmgr
 mkdir /mnt/windows
 mount $WINDOWS_BOOT /mnt/windows 
 grub-mkfont --output=/boot/grub/fonts/DejaVuSansMono20.pf2 \ --size=20 /usr/share/fonts/TTF/dejavu/DejaVuSansMono.ttf
