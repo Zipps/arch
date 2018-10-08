@@ -29,7 +29,7 @@ mkdir /mnt/boot
 mount $BOOT_DRIVE /mnt/boot
 
 # bootstrapping
-pacstrap /mnt base base-devel git networkmanager
+pacstrap /mnt base base-devel networkmanager
 
 if [[ $ISINTEL ]] then;
 	pacstrap /mnt intel-ucode
@@ -78,7 +78,7 @@ sed -i -e "s/<MAP_DRIVE>/$MAP_DRIVE/g" /boot/loader/entries/arch
 
 # finish and reboot
 exit
-cp ./post_install /mnt/user/$USERNAME
-cp ./config/config /mnt/user/$USERNAME
+cp ./post_install /mnt/user/$USERNAME/post_install
+cp ./config/config /mnt/user/$USERNAME/config
 umount -R /mnt
 reboot

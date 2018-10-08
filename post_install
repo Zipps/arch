@@ -16,3 +16,11 @@ vim /etc/pacman.d/mirrorlist
 
 # install packages
 pacman -S $DEFAULT_PACKAGES
+
+# install yay
+mkdir ~/dev && cd ~/dev
+git clone https://aur.archlinux.org/yay.git
+cd yay && makepkg -si
+
+# install AURS
+yay -S $AUR_PACKAGES
