@@ -1,1 +1,5 @@
-Title	Arch Linux
+title   Arch Linux
+linux   /vmlinuz-linux
+<INTEL_IMAGE>
+initrd  /initramfs-linux.img
+options cryptdevice=UUID=<LUKSUUID>:lvm:allow-discards resume=<SWAP_DRIVE> root=<MAP_DRIVE> rw
