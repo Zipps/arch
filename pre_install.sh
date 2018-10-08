@@ -1,21 +1,7 @@
-# parameters
-BEFOREWIFI=true
-MYHOSTNAME="arch"
-SSID=""
-WIFI_PASSPHRASE=""
-WIFI_ADAPTER=""
+#!/bin/bash
 
-ROOT_PASSWORD=""
-DRIVE_PASSPHRASE=""
-BOOT_DRIVE="/dev/nvme0n1p1"
-ROOT_DRIVE="/dev/nvme0n1p4"
-WINDOWS_BOOT="/dev/nvme0n1p2"
-CRYPT_NAME="cryptroot"
-ROOT_MAP="/dev/mapper/$CRYPT_NAME"
-
-MAP_DRIVE="/dev/mapper/arch-root"
-SWAP_DRIVE="/dev/mapper/arch-swap"
-SWAP_SIZE=18G
+# pull config
+source ./config/config
 
 # larger font
 setfont sun12x22
@@ -57,47 +43,33 @@ genfstab -U /mnt >> /mnt/etc/fstab
 
 # system setup
 arch-chroot /mnt
-ln -sf /usr/share/zoneinfo/Australia/Brisbane /etc/localtime
+ln -sf $MYLOCALE /etc/localtime
 hwclock --systohc
 
 # set root password
 echo -en "$ROOT_PASSWORD\n$ROOT_PASSWORD" | passwd
 
+# create user
+useradd -m -g wheel -s /bin/bash $USERNAME
+echo -en "$USERPW\n$USERPW" | passwd $USERNAME
+
 # config files
-sed -i 's/#en_AU.UTF-8 UTF-8/en_AU.UTF-8 UTF-8/g' /etc/locale.gen
-locale-gen
+sed -i $MYLOCALESED /etc/locale.gen && locale-gen
 echo $MYHOSTNAME > /etc/hostname
-echo LANG=en_AU.UTF-8 >> /etc/locale.conf
-echo LANGUAGE=en_AU >> /etc/locale.conf
-echo LC_ALL=C >> /etc/locale.conf
-export LANG=en_AU.UTF-8
-echo "127.0.0.1	localhost" >> /etc/hosts
-echo "::1		localhost" >> /etc/hosts
-echo "127.0.1.1 $MYHOSTNAME.localdomain  $MYHOSTNAME" >> /etc/hosts
+echo $MYLANG >> /etc/locale.conf
+cat /etc/hosts ./config/hosts > /etc/hosts
 
 # modify MKINITCPIO
-vim /etc/mkinitcpio.conf
+cp -f ./config/mkinitcpio /etc/mkinitcpio.conf
 mkinitcpio -p linux
 
-# setup GRUB
-pacman -S grub os-prober efibootmgr
-mkdir /mnt/windows
-mount $WINDOWS_BOOT /mnt/windows 
-grub-mkfont --output=/boot/grub/fonts/DejaVuSansMono20.pf2 \ --size=20 /usr/share/fonts/TTF/dejavu/DejaVuSansMono.ttf
-echo "menuentry \"Shutdown\" {
-	echo \"System shutting down...\"
-	halt
-}" >> /etc/grub.d/40_custom
-echo "menuentry \"Restart\" {
-	echo \"System rebooting...\"
-	reboot
-}" >> /etc/grub.d/40_custom
-
-vim /etc/defaults/grub
-grub-install --target=x86_64-efi --recheck --efi-directory=/boot --bootloader-id=GRUB
-grub-mkconfig -o /boot/grub/grub.cfg
+# setup BOOTLOADER
+cp -f ./config/boot /boot/loader/loader
+cp -f ./config/arch_boot /boot/loader/entries/arch
 
 # finish and reboot
 exit
+cp ./post_install /mnt/user/$USERNAME
+cp ./config/config /mnt/user/$USERNAME
 umount -R /mnt
 reboot

@@ -1,0 +1,46 @@
+#-------------------------------------------
+#
+#		Main config file for install
+#
+#-------------------------------------------
+
+#-------------------------------------------
+#			WiFi (optional)
+#-------------------------------------------
+
+SSID=""
+WIFI_PASSPHRASE=""
+WIFI_ADAPTER=""
+
+#-------------------------------------------
+#				  Users
+#-------------------------------------------
+
+ROOT_PASSWORD=""
+USERNAME=""
+USERPW=""
+
+#-------------------------------------------
+#				  Drive
+#-------------------------------------------
+
+DRIVE_PASSPHRASE=""
+BOOT_DRIVE=""
+ROOT_DRIVE=""
+CRYPT_NAME=""
+ROOT_MAP=""
+
+MAP_DRIVE=""
+SWAP_DRIVE=""
+SWAP_SIZE=
+
+#-------------------------------------------
+#				  Misc
+#-------------------------------------------
+
+MYHOSTNAME="MyPC"
+MYLOCALESED="'s/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/g'"
+MYLOCALE="/usr/share/zoneinfo/<Country>/<City>"
+MYLANG="LANG=en_US.UTF-8"
+
+DEFAULT_PACKAGES=""
