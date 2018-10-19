@@ -4,7 +4,7 @@
 source ./config/config
 
 # larger font
-setfont sun12x22
+setfont ter-228b
 
 # update system clock
 timedatectl set-ntp true
