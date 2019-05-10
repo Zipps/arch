@@ -38,9 +38,22 @@ SWAP_SIZE=
 #				  Misc
 #-------------------------------------------
 
-MYHOSTNAME="MyPC"
-MYLOCALESED="'s/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/g'"
-MYLOCALE="/usr/share/zoneinfo/<Country>/<City>"
-MYLANG="LANG=en_US.UTF-8"
+DRIVE_PASSPHRASE=
+CRYPT_NAME=""
+BOOT_DRIVE="/dev/sda1"
+ROOT_DRIVE="/dev/sda2"
 
-DEFAULT_PACKAGES=""
+MYHOSTNAME=MyPC
+MYLOCALESED="'s/#en_AU.UTF-8 UTF-8/en_AU.UTF-8 UTF-8/g'"
+MYLOCALE="/usr/share/zoneinfo/<Country>/<City>"
+MYLANG="LANG=en_AU.UTF-8"
+MYLANGUAGE="LANGUAGE=en_AU:en_GB:en"
+
+ISINTEL=true
+
+ROOT_PASSWORD=""
+USERNAME=""
+USERPW=""
+
+DEFAULT_PACKAGES="firefox-nightly vim git code termite powerline powerline-fonts-git stow"
+DOTFILE_GIT="https://github.com/Zipps/dotfiles.git"

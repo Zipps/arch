@@ -4,7 +4,7 @@
 source ./config/config
 
 # larger font
-setfont ter-228b
+setfont sun12x22
 
 # update system clock
 timedatectl set-ntp true
@@ -15,16 +15,13 @@ echo -en "$DRIVE_PASSPHRASE" | cryptsetup luksOpen "$ROOT_DRIVE" $CRYPT_NAME
 
 pvcreate /dev/mapper/$CRYPT_NAME
 vgcreate arch /dev/mapper/$CRYPT_NAME
-lvcreate -L +$SWAP_SIZE arch -n swap
 lvcreate -l +100%FREE arch -n root
 
 # Create filesystems on your encrypted partitions
-mkswap $SWAP_DRIVE
-mkfs.ext4 $MAP_DRIVE
+mkfs.ext4 /dev/mapper/$CRYPT_NAME
 
 # mount filesystems
-mount $MAP_DRIVE /mnt
-swapon $SWAP_DRIVE
+mount /dev/mapper/$CRYPT_NAME /mnt
 mkdir /mnt/boot
 mount $BOOT_DRIVE /mnt/boot
 
@@ -54,6 +51,7 @@ echo -en "$USERPW\n$USERPW" | passwd $USERNAME
 sed -i $MYLOCALESED /etc/locale.gen && locale-gen
 echo $MYHOSTNAME > /etc/hostname
 echo $MYLANG >> /etc/locale.conf
+echo $MYLANGUAGE >> /etc/locale.conf
 cat /etc/hosts ./config/hosts > /etc/hosts
 sed -i -e "s/<MYHOSTNAME>/$MYHOSTNAME/g" /etc/hosts
 
@@ -73,7 +71,6 @@ fi
 
 sed -i -e "s/<LUKSUUID>/$LUKSUUID/g" /boot/loader/entries/arch
 sed -i -e "s/<INTEL_IMAGE>/$INTEL_IMAGE/g" /boot/loader/entries/arch
-sed -i -e "s/<SWAP_DRIVE>/$SWAP_DRIVE/g" /boot/loader/entries/arch
 sed -i -e "s/<MAP_DRIVE>/$MAP_DRIVE/g" /boot/loader/entries/arch
 
 # finish and reboot
