@@ -1,0 +1,156 @@
+#!/bin/bash
+
+#-------------------------------------------
+#
+#		Config for installation
+#
+#-------------------------------------------
+
+#-------------------------------------------
+#				  Users
+#-------------------------------------------
+
+ROOT_PASSWORD=""
+USERNAME=""
+USERPW=""
+
+#-------------------------------------------
+#				  Drive
+#-------------------------------------------
+
+BOOT_DRIVE="/dev/nvme0n1p1"
+ROOT_DRIVE="/dev/nvme0n1p2"
+
+#-------------------------------------------
+#				  Misc
+#-------------------------------------------
+
+MYHOSTNAME=ArchPC
+MYLOCALESED="'s/#en_AU.UTF-8 UTF-8/en_AU.UTF-8 UTF-8/g'"
+MYLOCALE="/usr/share/zoneinfo/<Country>/<City>"
+MYLANG="LANG=en_AU.UTF-8"
+MYLANGUAGE="LANGUAGE=en_AU:en_GB:en"
+
+INTEL_MICROCODE=false
+AMD_MICROCODE=false
+
+DOTFILE_GIT="https://github.com/Zipps/dotfiles.git"
+DOTFILE_SCRIPT="expand.sh"
+
+PACKAGES=base base-devel linux linux-firmware git vim tmux code guake gnome xorg stow firefox pacman-contrib
+AUR_PACKAGES=joplin 
+
+#-------------------------------------------
+#
+#				Install
+#
+#-------------------------------------------
+
+# update system clock
+timedatectl set-ntp true
+
+# create boot and root partition
+# Note that a blank line (commented as "default" will send a empty
+# line terminated with a newline to take the fdisk default.
+(
+echo o # clear the in memory partition table
+echo n # new partition
+echo p # primary partition
+echo 1 # partition number 1
+echo   # default - start at beginning of disk 
+echo +500M # 100 MB boot parttion
+echo n # new partition
+echo p # primary partition
+echo 2 # partion number 2
+echo   # default, start immediately after preceding partition
+echo   # default, extend partition to end of disk
+echo a # make a partition bootable
+echo 1 # bootable partition is partition 1 -- /dev/sda1
+echo p # print the in-memory partition table
+echo w # write the partition table
+echo q # and we're done
+) | fdisk
+
+# Create filesystems on your encrypted partitions
+mkfs.vfat $BOOT_DRIVE
+mkfs.ext4 $ROOT_DRIVE
+
+# mount filesystems
+mount $ROOT_DRIVE /mnt
+mkdir /mnt/boot
+mount $BOOT_DRIVE /mnt/boot
+
+# bootstrapping
+if [[ $INTEL_MICROCODE ]] then;
+	PACKAGES="${PACKAGES} intel-ucode"
+fi
+if [[ $AMD_MICROCODE ]] then;
+	PACKAGES="${PACKAGES} amd-ucode"
+fi
+
+pacstrap /mnt $PACKAGES
+
+# fstab
+genfstab -U /mnt >> /mnt/etc/fstab
+
+# system setup
+arch-chroot /mnt
+ln -sf $MYLOCALE /etc/localtime
+hwclock --systohc
+
+# set root password
+echo -en "$ROOT_PASSWORD\n$ROOT_PASSWORD" | passwd
+
+# create user
+useradd -m -g wheel -s /bin/bash $USERNAME
+echo -en "$USERPW\n$USERPW" | passwd $USERNAME
+
+# config files
+sed -i $MYLOCALESED /etc/locale.gen && locale-gen
+echo $MYHOSTNAME > /etc/hostname
+echo $MYLANG >> /etc/locale.conf
+echo $MYLANGUAGE >> /etc/locale.conf
+cat /etc/hosts ./config/hosts > /etc/hosts
+sed -i -e "s/<MYHOSTNAME>/$MYHOSTNAME/g" /etc/hosts
+
+# setup BOOTLOADER
+bootctl --path=/boot install
+cp -f ./config/boot /boot/loader/loader.conf
+cp -f ./config/arch_boot /boot/loader/entries/arch.conf
+
+if [[ $INTEL_MICROCODE ]] then;
+	UCODE_IMAGE="initrd	/intel-ucode.img"
+elif [[ $AMD_MICROCODE ]] then;
+	UCODE_IMAGE="initrd	/amd-ucode.img"
+else
+	UCODE_IMAGE=""
+fi
+
+sed -i -e "s/<UCODE_IMAGE>/$UCODE_IMAGE/g" /boot/loader/entries/arch
+sed -i -e "s/<MAP_DRIVE>/$MAP_DRIVE/g" /boot/loader/entries/arch
+
+
+# get best mirrors
+cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
+sed -i 's/^#Server/Server/' /etc/pacman.d/mirrorlist.backup
+rankmirrors -n 6 /etc/pacman.d/mirrorlist.backup > /etc/pacman.d/mirrorlist
+vim /etc/pacman.d/mirrorlist
+
+# install yay
+mkdir ~/dev && cd ~/dev
+git clone https://aur.archlinux.org/yay.git
+cd yay && makepkg -si
+
+# install packages
+yay -S $AUR_PACKAGES
+
+# get dotfiles
+cd ~
+git clone $DOTFILE_GIT -o .dotfiles
+cd .dotfiles
+sh $DOTFILE_SCRIPT
+
+# finish and reboot
+exit
+umount -R /mnt
+reboot
