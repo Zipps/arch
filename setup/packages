@@ -1,0 +1,12 @@
+base
+base-devel
+linux
+linux-firmware
+git
+vim
+tmux
+code
+guake
+gnome
+xorg
+stow

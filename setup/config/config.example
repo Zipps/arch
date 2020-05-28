@@ -5,14 +5,6 @@
 #-------------------------------------------
 
 #-------------------------------------------
-#			WiFi (optional)
-#-------------------------------------------
-
-SSID=""
-WIFI_PASSPHRASE=""
-WIFI_ADAPTER=""
-
-#-------------------------------------------
 #				  Users
 #-------------------------------------------
 
@@ -24,24 +16,12 @@ USERPW=""
 #				  Drive
 #-------------------------------------------
 
-DRIVE_PASSPHRASE=""
-BOOT_DRIVE=""
-ROOT_DRIVE=""
-CRYPT_NAME=""
-ROOT_MAP=""
-
-MAP_DRIVE=""
-SWAP_DRIVE=""
-SWAP_SIZE=
+BOOT_DRIVE="/dev/nvme0n1p1"
+ROOT_DRIVE="/dev/nvme0n1p2"
 
 #-------------------------------------------
 #				  Misc
 #-------------------------------------------
-
-DRIVE_PASSPHRASE=
-CRYPT_NAME=""
-BOOT_DRIVE="/dev/sda1"
-ROOT_DRIVE="/dev/sda2"
 
 MYHOSTNAME=MyPC
 MYLOCALESED="'s/#en_AU.UTF-8 UTF-8/en_AU.UTF-8 UTF-8/g'"
@@ -49,11 +29,8 @@ MYLOCALE="/usr/share/zoneinfo/<Country>/<City>"
 MYLANG="LANG=en_AU.UTF-8"
 MYLANGUAGE="LANGUAGE=en_AU:en_GB:en"
 
-ISINTEL=true
+INTEL_MICROCODE=false
+AMD_MICROCODE=false
 
-ROOT_PASSWORD=""
-USERNAME=""
-USERPW=""
-
-DEFAULT_PACKAGES="firefox-nightly vim git code termite powerline powerline-fonts-git stow"
 DOTFILE_GIT="https://github.com/Zipps/dotfiles.git"
+DOTFILE_SCRIPT="expand.sh"

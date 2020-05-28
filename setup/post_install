@@ -3,11 +3,6 @@
 # pull config
 source ./config
 
-# setup network manager
-systemctl enable NetworkManager
-systemctl start NetworkManager
-nmcli d wifi connect $SSID password $WIFI_PASSPHRASE
-
 # get best mirrors
 cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
 sed -i 's/^#Server/Server/' /etc/pacman.d/mirrorlist.backup
@@ -24,4 +19,6 @@ yay -S $DEFAULT_PACKAGES
 
 # get dotfiles
 cd ~
-git clone $DOTFILE_GIT
+git clone $DOTFILE_GIT -o .dotfiles
+cd .dotfiles
+sh $DOTFILE_SCRIPT

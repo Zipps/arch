@@ -1,35 +1,31 @@
 #!/bin/bash
 
 # pull config
-source ./config/config
-
-# larger font
-setfont sun12x22
+source ./setup/config
 
 # update system clock
 timedatectl set-ntp true
 
-# encrypt partition
-echo -en "$DRIVE_PASSPHRASE" | cryptsetup -c aes-xts-plain -y -s 512 luksFormat "$ROOT_DRIVE"
-echo -en "$DRIVE_PASSPHRASE" | cryptsetup luksOpen "$ROOT_DRIVE" $CRYPT_NAME
+# create boot and root partition
 
-pvcreate /dev/mapper/$CRYPT_NAME
-vgcreate arch /dev/mapper/$CRYPT_NAME
-lvcreate -l +100%FREE arch -n root
 
 # Create filesystems on your encrypted partitions
-mkfs.ext4 /dev/mapper/$CRYPT_NAME
+mkfs.vfat $BOOT_DRIVE
+mkfs.ext4 $ROOT_DRIVE
 
 # mount filesystems
-mount /dev/mapper/$CRYPT_NAME /mnt
+mount $ROOT_DRIVE /mnt
 mkdir /mnt/boot
 mount $BOOT_DRIVE /mnt/boot
 
 # bootstrapping
-pacstrap /mnt base base-devel networkmanager
+pacstrap /mnt 
 
-if [[ $ISINTEL ]] then;
+if [[ $INTEL_MICROCODE ]] then;
 	pacstrap /mnt intel-ucode
+fi
+if [[ $AMD_MICROCODE ]] then;
+	pacstrap /mnt amd-ucode
 fi
 
 # fstab
@@ -55,22 +51,20 @@ echo $MYLANGUAGE >> /etc/locale.conf
 cat /etc/hosts ./config/hosts > /etc/hosts
 sed -i -e "s/<MYHOSTNAME>/$MYHOSTNAME/g" /etc/hosts
 
-# modify MKINITCPIO
-cp -f ./config/mkinitcpio /etc/mkinitcpio.conf
-mkinitcpio -p linux
-
 # setup BOOTLOADER
 bootctl --path=/boot install
-cp -f ./config/boot /boot/loader/loader
-cp -f ./config/arch_boot /boot/loader/entries/arch
+cp -f ./config/boot /boot/loader/loader.conf
+cp -f ./config/arch_boot /boot/loader/entries/arch.conf
 
-LUKSUUID=$(blkid -s UUID -o value $ROOT_DRIVE)
-if [[ $ISINTEL ]] then;
-	INTEL_IMAGE="initrd	/intel-ucode.img"
+if [[ $INTEL_MICROCODE ]] then;
+	UCODE_IMAGE="initrd	/intel-ucode.img"
+elif [[ $AMD_MICROCODE ]] then;
+	UCODE_IMAGE="initrd	/amd-ucode.img"
+else
+	UCODE_IMAGE=""
 fi
 
-sed -i -e "s/<LUKSUUID>/$LUKSUUID/g" /boot/loader/entries/arch
-sed -i -e "s/<INTEL_IMAGE>/$INTEL_IMAGE/g" /boot/loader/entries/arch
+sed -i -e "s/<UCODE_IMAGE>/$UCODE_IMAGE/g" /boot/loader/entries/arch
 sed -i -e "s/<MAP_DRIVE>/$MAP_DRIVE/g" /boot/loader/entries/arch
 
 # finish and reboot
